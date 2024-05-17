@@ -41,7 +41,7 @@ namespace WebAPI.Controllers
             userFromDb.Name = userDto.Name;
             userFromDb.Email = userDto.Email;
             userFromDb.Password= userDto.Password;
-            userFromDb.Type = userDto.Type;
+            userFromDb.TypeId = userDto.Type;
             _userRepository.Update(userFromDb);
             _userRepository.SaveChanges();
             return Ok(userFromDb);
