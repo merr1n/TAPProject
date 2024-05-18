@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DataAccessLayer.Models
@@ -19,5 +20,9 @@ namespace DataAccessLayer.Models
         }
         public string Type { get; set; }
         public int Id { get; set; }
+
+        [JsonIgnore]
+        public virtual ICollection<Event> Events { get; set; } = new List<Event>();
+
     }
 }

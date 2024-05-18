@@ -4,6 +4,7 @@ using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240517175102_RelationshipForEvents")]
+    partial class RelationshipForEvents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,6 +28,7 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("DataAccessLayer.Models.Event", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Date")
@@ -42,7 +46,7 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -57,7 +61,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "TypeId" }, "IX_Events_TypeId");
+                    b.HasIndex("TypeId");
 
                     b.ToTable("Events");
 
@@ -190,6 +194,7 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("DataAccessLayer.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
@@ -292,24 +297,24 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Models.Event", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.EventType", "Type")
+                    b.HasOne("DataAccessLayer.Models.EventType", "EventType")
                         .WithMany("Events")
                         .HasForeignKey("TypeId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Events_EventTypes");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Type");
+                    b.Navigation("EventType");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Models.User", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.UserType", "Type")
+                    b.HasOne("DataAccessLayer.Models.UserType", "UserType")
                         .WithMany("Users")
                         .HasForeignKey("TypeId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Users_UserTypes");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Type");
+                    b.Navigation("UserType");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Models.EventType", b =>

@@ -17,9 +17,9 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("get")]
-        public IEnumerable<User> Get()
+        public Task<IEnumerable<User>> Get()
         {
-            return _userRepository.GetAll();
+            return _userRepository.GetAll(["Type","Events","Events.Type"]);
         }
 
         [HttpPost("add")]

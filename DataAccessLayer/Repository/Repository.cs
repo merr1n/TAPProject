@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Dynamic;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer.Repository
@@ -22,6 +23,17 @@ namespace DataAccessLayer.Repository
         public IEnumerable<T> GetAll()
         {
             return _entities.ToList();
+        }
+
+        public async Task<IEnumerable<T>> GetAll(string[] EntityToInclude)
+        {
+            var entityType = typeof(T);
+            IQueryable<T> query = _entities;
+            foreach (var entity in EntityToInclude)
+            {
+                query = query.Include(entity);
+            }
+            return query.ToList();
         }
 
         public IEnumerable<T> Find(Expression<Func<T, bool>> predicate)

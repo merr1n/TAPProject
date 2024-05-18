@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DataAccessLayer.Models
@@ -24,6 +27,10 @@ namespace DataAccessLayer.Models
         public string Email { get; set; }
         public string Password { get; set; }
         public int TypeId { get; set; }
+        [Key]
         public Guid Id { get; set; }
+        public virtual UserType Type { get; set; } = null!;
+        [InverseProperty(nameof(Event.Organizer))]
+        public virtual ICollection<Event> Events { get; set; } = new List<Event>();
     }
 }

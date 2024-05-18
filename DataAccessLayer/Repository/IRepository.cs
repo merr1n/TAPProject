@@ -6,6 +6,7 @@ namespace DataAccessLayer.Repository
     {
         T GetById(Guid id);
         IEnumerable<T> GetAll();
+        Task<IEnumerable<T>> GetAll(string[] entitiesToInclude);
         IEnumerable<T> Find(Expression<Func<T, bool>> predicate);
         void Add(T entity);
         void Update(T entity);
