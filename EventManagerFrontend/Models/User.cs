@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace DataAccessLayer.Models
+namespace EventManagerFrontend.Models
 {
     public class User
     {

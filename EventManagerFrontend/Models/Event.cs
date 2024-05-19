@@ -1,14 +1,8 @@
-﻿using DataAccessLayer.Repository;
-using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
-namespace DataAccessLayer.Models
+namespace EventManagerFrontend.Models
 {
     public class Event
     {
@@ -23,7 +17,7 @@ namespace DataAccessLayer.Models
             Price = price;
             Status = status;
         }
-
+        [JsonConstructor]
         public Event(Guid id, string title, string location, Guid organizerId, DateTime date, string description, int typeId, decimal price, string status)
         {
             Id = id;

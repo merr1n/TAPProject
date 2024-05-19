@@ -5,6 +5,8 @@ using BusinessLayer.Contracts;
 using BusinessLayer.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Net.Http.Headers;
 
 namespace WebAPI
 {
@@ -42,6 +44,8 @@ namespace WebAPI
             //Database
             builder.Services.AddDbContext<MyDbContext>();
 
+            //builder.Services.AddControllers().AddNewtonsoftJson();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -50,6 +54,8 @@ namespace WebAPI
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseCors(policy => policy.WithOrigins("https://localhost:7227", "http://localhost:7227").AllowAnyMethod().AllowAnyHeader());
 
             app.UseHttpsRedirection();
 

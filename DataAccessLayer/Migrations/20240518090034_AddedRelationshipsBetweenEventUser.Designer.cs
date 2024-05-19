@@ -4,6 +4,7 @@ using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240518090034_AddedRelationshipsBetweenEventUser")]
+    partial class AddedRelationshipsBetweenEventUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,29 +193,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("TestModels");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Models.Ticket", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Tickets");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -336,25 +316,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Type");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Models.Ticket", b =>
-                {
-                    b.HasOne("DataAccessLayer.Models.Event", "Event")
-                        .WithMany("Tickets")
-                        .HasForeignKey("EventId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Tickets_Events");
-
-                    b.HasOne("DataAccessLayer.Models.User", "User")
-                        .WithMany("Tickets")
-                        .HasForeignKey("UserId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Tickets_Users");
-
-                    b.Navigation("Event");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Models.User", b =>
                 {
                     b.HasOne("DataAccessLayer.Models.UserType", "Type")
@@ -366,11 +327,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Type");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Models.Event", b =>
-                {
-                    b.Navigation("Tickets");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Models.EventType", b =>
                 {
                     b.Navigation("Events");
@@ -379,8 +335,6 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("DataAccessLayer.Models.User", b =>
                 {
                     b.Navigation("Events");
-
-                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Models.UserType", b =>

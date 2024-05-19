@@ -13,6 +13,7 @@ namespace DataAccessLayer
         public DbSet<UserType> UserTypes { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<EventType> EventTypes { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -77,6 +78,19 @@ namespace DataAccessLayer
                     .HasForeignKey(d => d.TypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Users_UserTypes");
+            });
+
+            builder.Entity<Ticket>(entity =>
+            {
+                entity.HasOne(d => d.Event).WithMany(p => p.Tickets)
+                    .HasForeignKey(d => d.EventId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Tickets_Events");
+
+                entity.HasOne(d => d.User).WithMany(p => p.Tickets)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Tickets_Users");
             });
         }
     }

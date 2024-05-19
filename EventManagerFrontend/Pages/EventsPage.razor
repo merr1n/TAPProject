@@ -1,0 +1,72 @@
+﻿@page "/events"
+@using EventManagerFrontend.Models
+@inject HttpClient Http
+
+<PageTitle>Events</PageTitle>
+
+<h3>Events hub</h3>
+
+<p>All the events that happened or will happen</p>
+
+@code {
+    private Event[]? events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Console.WriteLine("Fetching events...");
+            events = await Http.GetFromJsonAsync<Event[]>("/Event/get");
+
+            if (events == null || events.Length == 0)
+            {
+                Console.WriteLine("No events found.");
+            }
+            else
+            {
+                Console.WriteLine($"Fetched {events.Length} events.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching events: {ex.Message}");
+        }
+    }
+}
+
+@if(events == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Location</th>
+                <th>Organizer</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var singleEvent in events)
+            {
+                <tr>
+                    <th>@singleEvent.Title</th>
+                    <th>@singleEvent.Location</th>
+                    <th>@singleEvent.Description</th>
+                    <th>@singleEvent.Price</th>
+                    <th>@singleEvent.Type.Type</th>
+                    <th>@singleEvent.Date</th>
+                    <th>@singleEvent.Status</th>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
