@@ -9,6 +9,7 @@ namespace EventManagerFrontend.Models
 {
     public class Ticket
     {
+        public Ticket() { }
         public Ticket(Guid userId, Guid eventId)
         {
             UserId = userId;

@@ -1,0 +1,110 @@
+﻿@page "/buyticket"
+@using EventManagerFrontend.Components
+@using Microsoft.AspNetCore.Components.Web
+@using EventManagerFrontend.Models
+@using System.Text.Json
+@inject NavigationManager NavigationManager
+@inject UserState UserState
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+
+<style>
+    .event-card {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .event-details {
+        margin-bottom: 10px;
+    }
+
+    .buy-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+
+    .disabled-buy-button {
+        background-color: #ccc;
+        color: #666;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 16px;
+        cursor: not-allowed;
+    }
+</style>
+
+
+@code{
+
+    private Event singleEvent;
+    private User loggedInUser;
+    protected override async Task OnInitializedAsync()
+    {
+        string localStorageUserJson = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "loggedInUser");
+        if (!string.IsNullOrEmpty(localStorageUserJson))
+        {
+            loggedInUser = JsonSerializer.Deserialize<User>(localStorageUserJson);
+        }
+        else
+        {
+            loggedInUser = null;
+        }
+        var eventJson = NavigationManager.Uri.Split('?')[1].Split('=')[1];
+        singleEvent = JsonSerializer.Deserialize<Event>(System.Web.HttpUtility.UrlDecode(eventJson));
+    }
+    }
+
+<h3>Event details</h3>
+@if(singleEvent!=null)
+{
+<div class="event-card">
+    <div class="event-details">
+        <h4>@singleEvent.Title</h4>
+        <p><strong>Location:</strong> @singleEvent.Location</p>
+        <p><strong>Organizer:</strong> @singleEvent.Organizer.Name</p>
+        <p><strong>Description:</strong> @singleEvent.Description</p>
+        <p><strong>Price:</strong> @singleEvent.Price</p>
+        <p><strong>Type:</strong> @singleEvent.Type.Type</p>
+        <p><strong>Date:</strong> @singleEvent.Date</p>
+        <p><strong>Status:</strong> <span style="color: @(singleEvent.Status == "Closed" ? "red" : singleEvent.Status == "Sold-out" ? "orange" : "green")">@singleEvent.Status</span></p>
+    </div>
+    @if (singleEvent.Status == "Available")
+    {
+       <button class="buy-button" @onclick="(e) => HandleBuy()">Buy</button>
+    }
+    else
+    {
+        <button class="disabled-buy-button">Buy</button>
+    }
+</div>
+}
+
+@code{
+    private Ticket newTicket = new Ticket();
+    private string buyResult;
+    private async Task HandleBuy()
+    {
+        newTicket.EventId = singleEvent.Id;
+        if(loggedInUser!=null)
+        newTicket.UserId = loggedInUser.Id;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/Ticket/add", newTicket);
+            response.EnsureSuccessStatusCode();
+            await JsRuntime.InvokeVoidAsync("alert", "Ticket bought!");
+            NavigationManager.NavigateTo("/events");
+        }
+        catch(Exception e)
+        {
+            buyResult = $"Try again: {e.Message}";
+        }
+    }
+}

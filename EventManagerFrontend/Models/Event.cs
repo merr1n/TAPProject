@@ -6,6 +6,7 @@ namespace EventManagerFrontend.Models
 {
     public class Event
     {
+        public Event() { }
         public Event(string title, string location, Guid organizerId, DateTime date, string description, int typeId, decimal price, string status)
         {
             Title = title;
@@ -43,7 +44,6 @@ namespace EventManagerFrontend.Models
         public Guid Id { get; set; }
         public virtual EventType Type { get; set; } = null!;
         [InverseProperty(nameof(User.Events))]
-        [JsonIgnore]
         public virtual User Organizer { get; set; } = null!;
         [JsonIgnore]
         public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();

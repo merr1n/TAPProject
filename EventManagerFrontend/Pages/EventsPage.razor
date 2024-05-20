@@ -1,6 +1,10 @@
 ﻿@page "/events"
+@using EventManagerFrontend.Components
 @using EventManagerFrontend.Models
+@using System.Text.Json
 @inject HttpClient Http
+@inject IJSRuntime JsRuntime
+@inject UserState UserState
 
 <PageTitle>Events</PageTitle>
 
@@ -10,9 +14,19 @@
 
 @code {
     private Event[]? events;
+    private User loggedInUser;
 
     protected override async Task OnInitializedAsync()
     {
+        string localStorageUserJson = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "loggedInUser");
+        if (!string.IsNullOrEmpty(localStorageUserJson))
+        {
+            loggedInUser = JsonSerializer.Deserialize<User>(localStorageUserJson);
+        }
+        else
+        {
+            loggedInUser = null;
+        }
         try
         {
             Console.WriteLine("Fetching events...");
@@ -34,6 +48,18 @@
     }
 }
 
+@if (loggedInUser !=null)
+{
+    if (loggedInUser.Type.Type == "admin" || loggedInUser.Type.Type == "organizer")
+    {
+        <button onclick="window.location.href='addevent'" class="button-enabled">Add Event</button>
+        
+    }
+}
+else
+{
+}
+
 @if(events == null)
 {
     <p><em>Loading...</em></p>
@@ -51,6 +77,7 @@ else
                 <th>Type</th>
                 <th>Date</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -59,13 +86,34 @@ else
                 <tr>
                     <th>@singleEvent.Title</th>
                     <th>@singleEvent.Location</th>
+                    <th>@singleEvent.Organizer.Name</th>
                     <th>@singleEvent.Description</th>
                     <th>@singleEvent.Price</th>
                     <th>@singleEvent.Type.Type</th>
                     <th>@singleEvent.Date</th>
-                    <th>@singleEvent.Status</th>
+                    <th style="color: @(singleEvent.Status == "Closed" ? "red" : singleEvent.Status == "Sold-out" ? "orange" : "green")">@singleEvent.Status</th>
+                    <th>
+                        @if (singleEvent.Status == "Available" )
+                        {
+                            if(loggedInUser!=null)
+                            {
+                                @* <button onclick="window.location.href='buyticket/@(singleEvent.Id)'" class="button-enabled">Cumpără bilet</button> *@
+                                <button onclick="window.location.href='buyticket?event=@(System.Web.HttpUtility.UrlEncode(JsonSerializer.Serialize(singleEvent)))'" class="button-enabled">Buy ticket</button>
+                            }
+                            else
+                            {
+                                <button class="button-disabled" disabled>Must log in</button>
+                            }
+
+                        }
+                        else
+                        {
+                            <button class="button-disabled" disabled>Unavailable</button>
+                        }
+                    </th>
                 </tr>
             }
+
         </tbody>
     </table>
 }

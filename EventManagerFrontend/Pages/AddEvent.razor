@@ -1,0 +1,247 @@
+﻿@page "/addevent"
+@using EventManagerFrontend.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@using System.Text.Json
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Add Event</PageTitle>
+<h3>Add new Event</h3>
+
+@code {
+    private EventType[]? eventTypes;
+    private User loggedInUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string localStorageUserJson = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "loggedInUser");
+        if (!string.IsNullOrEmpty(localStorageUserJson))
+        {
+            loggedInUser = JsonSerializer.Deserialize<User>(localStorageUserJson);
+        }
+        else
+        {
+            loggedInUser = null;
+        }
+        try
+        {
+            Console.WriteLine("Fetching events...");
+            eventTypes = await Http.GetFromJsonAsync<EventType[]>("/EventType/get");
+
+            if (eventTypes == null || eventTypes.Length == 0)
+            {
+                Console.WriteLine("No event types found.");
+            }
+            else
+            {
+                Console.WriteLine($"Fetched {eventTypes.Length} event types.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching event types: {ex.Message}");
+        }
+    }
+}
+
+@if (submitResult != null)
+{
+    <p>@submitResult</p>
+}
+<style>
+    .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .event-types {
+        flex: 1;
+    }
+
+    .event-form-card {
+        flex: 1;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        background-color: #fff;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        outline: none;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0 2px #999;
+    }
+
+        .btn:hover {
+            background-color: #0056b3
+        }
+
+        .btn:active {
+            background-color: #0056b3;
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+    .event-types {
+        flex: 1;
+    }
+
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 25px 0;
+        font-size: 18px;
+        text-align: left;
+    }
+
+        .styled-table th, .styled-table td {
+            padding: 12px 15px;
+        }
+
+        .styled-table th {
+            background-color: #009879;
+            color: #ffffff;
+        }
+
+        .styled-table tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+
+        .styled-table tr:nth-of-type(odd) {
+            background-color: #ffffff;
+        }
+
+        .styled-table tr:hover {
+            background-color: #f1f1f1;
+        }
+</style>
+
+@if(eventTypes==null)
+{
+<p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <div class="event-types">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Event Type</th>
+                        <th>Event ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var singleEventType in eventTypes)
+                    {
+                        <tr>
+                            <td>@singleEventType.Type</td>
+                            <td>@singleEventType.Id</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+<div class="event-form-card">
+    <form @onsubmit="HandleSubmit">
+        <div class="form-group">
+            <label>Title:</label>
+            <input type="text" @bind="newEvent.Title" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Location:</label>
+            <input type="text" @bind="newEvent.Location" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Description:</label>
+            <input type="text" @bind="newEvent.Description" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Date:</label>
+            <input type="date" @bind="newEvent.Date" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Price:</label>
+            <input type="number" step="0.01" @bind="newEvent.Price" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Event Type:</label>
+            <input type="number" @bind="newEvent.TypeId" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+</div>
+}
+
+@code {
+    private Event newEvent = new Event();
+    private string submitResult;
+
+    private async Task HandleSubmit()
+    {
+        if (newEvent.TypeId < 1 || newEvent.TypeId > 5)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Event Type must be between 1 and 5.");
+            return;
+        }
+        if(newEvent.Title==null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Title required.");
+            return;
+        }
+        if(newEvent.Location==null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Location required.");
+            return;
+        }
+        if(newEvent.Description==null)
+        {
+            newEvent.Description = "-";
+        }
+        newEvent.Status = "Available";
+        if(loggedInUser!=null)
+        newEvent.OrganizerId=loggedInUser.Id;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/Event/add", newEvent);
+            response.EnsureSuccessStatusCode();
+            await JsRuntime.InvokeVoidAsync("alert", "Event added!");
+            NavigationManager.NavigateTo("/events");
+        }
+        catch (Exception ex)
+        {
+            submitResult = $"Try again: {ex.Message}";
+        }
+    }
+}

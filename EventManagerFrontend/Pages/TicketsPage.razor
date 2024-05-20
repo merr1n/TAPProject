@@ -1,0 +1,79 @@
+﻿@page "/tickets"
+@using EventManagerFrontend.Components
+@using EventManagerFrontend.Models
+@using System.Text.Json
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+@inject UserState UserState
+
+<PageTitle>My Tickets</PageTitle>
+
+<h3>My Tickets</h3>
+
+@code {
+    private Event[]? events;
+    private User[]? users;
+    private User loggedInUser;
+    private Ticket[]? tickets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string localStorageUserJson = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "loggedInUser");
+        if (!string.IsNullOrEmpty(localStorageUserJson))
+        {
+            loggedInUser = JsonSerializer.Deserialize<User>(localStorageUserJson);
+        }
+        else
+        {
+            loggedInUser = null;
+        }
+        try
+        {
+            events = await Http.GetFromJsonAsync<Event[]>("/Event/get");
+            tickets = await Http.GetFromJsonAsync<Ticket[]>("/Ticket/get");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching events: {ex.Message}");
+        }
+    }
+}
+
+@if (loggedInUser==null || loggedInUser.Tickets==null)
+{
+    <p><em>Loading tickets...</em></p>
+}
+else
+{
+    var selectedTickets = tickets.Where(t => t.UserId==loggedInUser.Id);
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Location</th>
+                <th>Organizer</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var singleTicket in selectedTickets)
+            {
+                var singleEvent = events.FirstOrDefault(e => e.Id == singleTicket.EventId);
+                if (singleEvent != null)
+                {
+                    <tr>
+                        <td>@singleEvent.Title</td>
+                        <td>@singleEvent.Location</td>
+                        <td>@singleEvent.Organizer.Name</td>
+                        <td>@singleEvent.Description</td>
+                        <td>@singleEvent.Type.Type</td>
+                        <td>@singleEvent.Date</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+

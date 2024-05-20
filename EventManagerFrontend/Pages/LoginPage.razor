@@ -1,0 +1,76 @@
+﻿@page "/login"
+@using EventManagerFrontend.Components
+@using EventManagerFrontend.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject UserState UserState
+@inject IJSRuntime JsRuntime
+@using System.Text.Json
+
+<h3>Login</h3>
+
+@code {
+    private User[]? users;
+    private User loggedInUser;
+    protected override async Task OnInitializedAsync()
+    {
+            users = await Http.GetFromJsonAsync<User[]>("/User/get");
+        string localStorageUserJson = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "loggedInUser");
+        if (!string.IsNullOrEmpty(localStorageUserJson))
+        {
+            loggedInUser = JsonSerializer.Deserialize<User>(localStorageUserJson);
+        }
+        else
+        {
+            loggedInUser = null;
+        }
+    }
+}
+
+@if(loggedInUser==null)
+{
+
+    <div>
+        <label>Email:</label>
+        <input type="text" @bind="email" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <input type="password" @bind="password" />
+    </div>
+    <button @onclick="HandleLogin">Login</button>
+}
+else
+{
+    <h3>Successfully logged in!</h3>
+}
+
+
+
+@code {
+    private string email;
+    private string password;
+
+    private async Task HandleLogin()
+    {
+        User findUser = users.FirstOrDefault(u => u.Email == email);
+        if(findUser!=null)
+        {
+            if(findUser.Password==password)
+            {
+                string userJson = JsonSerializer.Serialize(findUser);
+                await JsRuntime.InvokeVoidAsync("localStorage.setItem", "loggedInUser", userJson);
+                UserState.LogIn(findUser);
+                NavigationManager.NavigateTo(NavigationManager.Uri, true);
+            }
+            else
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Wrong Password.");
+            }
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "User doesn't exist.");
+        }
+    }
+}

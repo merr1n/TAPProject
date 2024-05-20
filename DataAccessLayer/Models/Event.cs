@@ -49,7 +49,6 @@ namespace DataAccessLayer.Models
         public Guid Id { get; set; }
         public virtual EventType Type { get; set; } = null!;
         [InverseProperty(nameof(User.Events))]
-        [JsonIgnore]
         public virtual User Organizer { get; set; } = null!;
         [JsonIgnore]
         public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();

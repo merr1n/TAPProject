@@ -14,6 +14,7 @@ namespace EventManagerFrontend.Models
            Type = type;
         }
 
+        [JsonConstructor]
         public UserType(int id, string type)
         {
             Id = id; Type = type;

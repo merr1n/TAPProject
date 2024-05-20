@@ -1,16 +1,63 @@
-﻿@inherits LayoutComponentBase
+﻿@using EventManagerFrontend.Components
+@using EventManagerFrontend.Models
+@using System.Text.Json
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject UserState UserState
+@inject IJSRuntime JsRuntime
 <div class="page">
     <div class="sidebar">
         <NavMenu />
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+        @if (loggedInUser==null)
+        {
+            <div class="top-row px-4">
+                <a @onclick="Register">Register</a>
+                <a @onclick="LogIn">Log in</a>
+            </div>
+        }
+        else
+        {
+            <div class="top-row px-4">
+                Hello, @loggedInUser.Name 
+                <a href="#" @onclick="LogOut">Log out</a>
+            </div>
+        }
 
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code
+{
+    private User loggedInUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string localStorageUserJson = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "loggedInUser");
+        if (!string.IsNullOrEmpty(localStorageUserJson))
+        {
+            loggedInUser = JsonSerializer.Deserialize<User>(localStorageUserJson);
+        }
+    }
+    private void LogOut()
+    {
+        JsRuntime.InvokeVoidAsync("localStorage.removeItem", "loggedInUser");
+        UserState.LogOut();
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void LogIn()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+
+    private void Register()
+    {
+        NavigationManager.NavigateTo("/register");
+}
+}
