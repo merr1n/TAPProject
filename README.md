@@ -5,6 +5,7 @@
   - The frontend doesn't allow to delete nor update.
   - The 'login' is based on a localStorage so no professional authetification.
   - The 'register' page doesn't work (ERROR 400) -> couldn't figure out why -> double checked the User schema in the Api and the inputs in the page but still don't know the issue.
-  - Some options in the fronend will be available only after login.
+  - Some options in the frontend will be available only after login, aswell as options available only for admins/organizers.
   - Added some data in the table through the 'OnModelCreating' method.
   - Added the migrations.
+  - Admin account: em: darius@gmail.com pw: darius
